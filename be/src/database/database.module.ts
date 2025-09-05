@@ -1,8 +1,8 @@
 import { Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { User } from '../users/entities/user.entity';
 import { DatabaseService } from './database.service';
+import { DataSourceOptions } from 'typeorm';
 
 @Global()
 @Module({
@@ -11,15 +11,20 @@ import { DatabaseService } from './database.service';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
-        host: configService.get<string>('database.host'),
-        port: configService.get<number>('database.port'),
-        username: configService.get<string>('database.username'),
-        password: configService.get<string>('database.password'),
-        database: configService.get<string>('database.database'),
-        entities: [User],
-        migrations: configService.get<string[]>('database.migrations'),
-        synchronize: configService.get<boolean>('database.synchronize'),
-        logging: configService.get<boolean>('database.logging'),
+        host: configService.getOrThrow<string>('database.host'),
+        port: configService.getOrThrow<number>('database.port'),
+        username: configService.getOrThrow<string>('database.username'),
+        password: configService.getOrThrow<string>('database.password'),
+        database: configService.getOrThrow<string>('database.database'),
+        entities:
+          configService.getOrThrow<DataSourceOptions['entities']>(
+            'database.entities',
+          ),
+        migrations: configService.getOrThrow<DataSourceOptions['migrations']>(
+          'database.migrations',
+        ),
+        synchronize: configService.getOrThrow<boolean>('database.synchronize'),
+        logging: configService.getOrThrow<boolean>('database.logging'),
         autoLoadEntities: true,
       }),
     }),
